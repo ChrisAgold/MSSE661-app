@@ -1,21 +1,42 @@
 import User from '../models/User.js'
+import {StatusCodes} from 'http-status-codes'
 
-const register = async (req, res, next) => {
-    try {
-        const user = await User.create(req.body)
-        res.status(201).json({user})
-    } catch (error) {
-        next(error)
+class CustomAPIError extends Error {
+    constructor(message) {
+        super(message)
     }
 }
 
+class BADREQUESTERROR extends CustomAPIError {
+    constructor(message) {
+        super(message)
+        this.statusCode = StatusCodes.BAD_REQUEST
+    }
+}
 
-const login = async (req,res) => {
+class NotFoundError extends CustomAPIError {
+    constructor(message) {
+        super(message)
+        this.statusCode = StatusCodes.NOT_FOUND
+    }
+}
+
+const register = async (req, res) => {
+    const {name,email,password} = req.body
+    if(!name || !email || password) {
+        throw new BADREQUESTERROR('please provide all values')
+    }
+
+    const user = await User.create({name,email,password})
+    res.status(StatusCodes.CREATED).json({user})
+}
+
+const login = async (req, res) => {
     res.send('login user')
 }
 
-const updateUser = async (req,res) => {
+const updateUser = async (req, res) => {
     res.send('update user')
 }
 
-export {register,login,updateUser}
+export {register, login, updateUser}
